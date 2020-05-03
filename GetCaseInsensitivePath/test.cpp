@@ -8,7 +8,7 @@
 
 void initTest( void );
 void deinitTest( void );
-bool GetCaseInsensitivePath( const std::string path, std::string & correctedPath);
+bool GetCaseInsensitivePath( std::string const & path, std::string & correctedPath );
 static int original_casepath(char const *path, char *r);
 
 void initTest( void ) {
@@ -79,7 +79,7 @@ int main(){
 }
 
 // splitString - function for splitting strings by delimiter
-std::vector<std::string> splitString( std::string path, std::string delimiter )
+std::vector<std::string> splitString( std::string const & path, std::string const & delimiter )
 {
     std::vector<std::string> result;
 
@@ -87,19 +87,19 @@ std::vector<std::string> splitString( std::string path, std::string delimiter )
         return result;
     }
 
-    size_t nPos = path.find( delimiter, 0 );
-    while ( nPos != std::string::npos ) { // while found delimiter
-        size_t nnPos = path.find( delimiter, nPos + 1 );
-        if ( nnPos != std::string::npos ) { // if found next delimiter
-            result.push_back( path.substr( nPos + 1, nnPos - nPos - 1 ) );
+    size_t pos = path.find( delimiter, 0 );
+    while ( pos != std::string::npos ) { // while found delimiter
+        const size_t nextPos = path.find( delimiter, pos + 1 );
+        if ( nextPos != std::string::npos ) { // if found next delimiter
+            result.push_back( path.substr( pos + 1, nextPos - pos - 1 ) );
         }
         else { // if no more delimiter present
-            if ( !path.substr( nPos + 1 ).empty() ) { // if not a postfix delimiter
-                result.push_back( path.substr( nPos + 1 ) );
+            if ( pos + 1 < path.length() ) { // if not a postfix delimiter
+                result.push_back( path.substr( pos + 1 ) );
             }
         }
 
-        nPos = path.find( delimiter, nPos + 1 );
+        pos = path.find( delimiter, pos + 1 );
     }
 
     if ( result.empty() ) { // if delimiter not present
@@ -131,29 +131,28 @@ int strcasecmp_u( const char *s1, const char *s2 ) {
     return result;
 };
 
-bool GetCaseInsensitivePath( const std::string path, std::string & correctedPath )
+// based on: https://github.com/OneSadCookie/fcaseopen
+bool GetCaseInsensitivePath( std::string const & path, std::string & correctedPath )
 {
     DIR * d;
     bool last = false;
     correctedPath.clear();
 
     const char chCurDir = '.';
-    const char * strCurDir = &chCurDir;
     const char chDelimiter = '/';
-    const char * strDelimiter = &chDelimiter;
 
     if ( path.empty() )
         return false;
 
     if ( path[0] == chDelimiter ) {
-        d = opendir( strDelimiter );
+        d = opendir( &chDelimiter );
     }
     else {
         correctedPath = chCurDir;
-        d = opendir( strCurDir );
+        d = opendir( &chCurDir );
     }
 
-    std::vector<std::string> splittedPath = splitString( path, strDelimiter );
+    std::vector<std::string> splittedPath = splitString( path, &chDelimiter );
     for ( std::vector<std::string>::iterator subPathIter = splittedPath.begin(); subPathIter != splittedPath.end(); ++subPathIter ) {
         if ( !d ) {
             return false;
@@ -164,7 +163,7 @@ bool GetCaseInsensitivePath( const std::string path, std::string & correctedPath
             return false;
         }
 
-        correctedPath.append( strDelimiter );
+        correctedPath.append( &chDelimiter );
 
         struct dirent * e = readdir( d );
         while ( e ) {
