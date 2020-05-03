@@ -82,7 +82,7 @@ int main(){
 }
 
 // splitUnixPath - function for splitting strings by delimiter
-std::vector<std::string> splitUnixPath( std::string const & path, std::string const & delimiter )
+const std::vector<std::string> splitUnixPath( const std::string & path, const std::string & delimiter )
 {
     std::vector<std::string> result;
 
@@ -102,6 +102,7 @@ std::vector<std::string> splitUnixPath( std::string const & path, std::string co
             if ( pos + 1 < path.length() ) { // if not a postfix delimiter
                 result.push_back( path.substr( pos + 1 ) );
             }
+            break;
         }
 
         pos = path.find( delimiter, pos + 1 );
@@ -137,17 +138,17 @@ int strcasecmp_u( const char *s1, const char *s2 ) {
 };
 
 // based on: https://github.com/OneSadCookie/fcaseopen
-bool GetCaseInsensitivePath( std::string const & path, std::string & correctedPath )
+bool GetCaseInsensitivePath( const std::string & path, std::string & correctedPath )
 {
-    DIR * d;
-    bool last = false;
     correctedPath.clear();
-
-    const char chCurDir = '.';
-    const char chDelimiter = '/';
 
     if ( path.empty() )
         return false;
+
+    DIR * d;
+    bool last = false;
+    const char chCurDir = '.';
+    const char chDelimiter = '/';
 
     if ( path[0] == chDelimiter ) {
         d = opendir( &chDelimiter );
@@ -157,8 +158,8 @@ bool GetCaseInsensitivePath( std::string const & path, std::string & correctedPa
         d = opendir( &chCurDir );
     }
 
-    std::vector<std::string> splittedPath = splitUnixPath( path, &chDelimiter );
-    for ( std::vector<std::string>::iterator subPathIter = splittedPath.begin(); subPathIter != splittedPath.end(); ++subPathIter ) {
+    const std::vector<std::string> splittedPath = splitUnixPath( path, &chDelimiter );
+    for ( std::vector<std::string>::const_iterator subPathIter = splittedPath.begin(); subPathIter != splittedPath.end(); ++subPathIter ) {
         if ( !d ) {
             return false;
         }
